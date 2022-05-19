@@ -1,6 +1,19 @@
 import "@tsed/ajv";
 import {BodyParams, Context, Controller, HeaderParams, PlatformTest, RawBodyParams} from "@tsed/common";
-import {Post, Default, Description, GenericOf, Generics, Maximum, Minimum, Nullable, Property, Required, Status} from "@tsed/schema";
+import {
+  Consumes,
+  Default,
+  Description,
+  GenericOf,
+  Generics,
+  Maximum,
+  Minimum,
+  Nullable,
+  Post,
+  Property,
+  Required,
+  Status
+} from "@tsed/schema";
 import SuperTest from "supertest";
 import {PlatformTestingSdkOpts} from "../interfaces";
 
@@ -68,63 +81,63 @@ class TestBodyParamsCtrl {
   @Status(201)
   @Description("retrieve body and header content-type")
   testScenario1(@HeaderParams("Content-type") contentType: string, @BodyParams() payload: any) {
-    return {payload, contentType};
+    return { payload, contentType };
   }
 
   @Post("/scenario-2")
   @Description("Extract field from body payload as string[]")
   testScenario2(@BodyParams("test") value: string[]): any {
-    return {value};
+    return { value };
   }
 
   @Post("/scenario-3")
   @Description("Extract body payload as string[]")
   testScenario3(@BodyParams() value: string[]): any {
-    return {value};
+    return { value };
   }
 
   @Post("/scenario-4")
   @Description("Extract field from body payload as string[] with required annotation")
   testScenario4(@Required() @BodyParams("test") value: string[]): any {
-    return {value};
+    return { value };
   }
 
   @Post("/scenario-4b")
   @Description("Extract field from body payload as string")
   testScenario4b(@Required() @BodyParams("test") value: string): any {
-    return {value};
+    return { value };
   }
 
   @Post("/scenario-4c")
   @Description("Extract field from body payload as number with required annotation")
   testScenario4c(@Required() @BodyParams("test") value: number): any {
-    return {value};
+    return { value };
   }
 
   @Post("/scenario-5")
   @Description("Extract raw body payload as Buffer")
   testScenario5(@RawBodyParams() raw: Buffer, @BodyParams() payload: any, @Context() context: Context): any {
-    return {value: raw.toString("utf8")};
+    return { value: raw.toString("utf8") };
   }
 
   @Post("/scenario-6")
   testScenario6(@BodyParams("type", String) type: keyof typeof MyEnum): any {
-    return {type};
+    return { type };
   }
 
   @Post("/scenario-7")
   testScenario7(@BodyParams("test") value: string): any {
-    return {value};
+    return { value };
   }
 
   @Post("/scenario-8")
   testScenario8(@BodyParams() model: NullModel) {
-    return {model};
+    return { model };
   }
 
   @Post("/scenario-9")
   testScenario9(@BodyParams() @GenericOf(FindQuery) q: PaginationQuery<FindQuery>) {
-    return {q};
+    return { q };
   }
 
   @Post("/scenario-10")
@@ -132,7 +145,15 @@ class TestBodyParamsCtrl {
     @Required() @BodyParams("param1", Param1Type) param1: Param1Type,
     @Required() @BodyParams("param2", Param2Type) param2: Param2Type
   ) {
-    return {param1, param2};
+    return { param1, param2 };
+  }
+
+  @Post("/scenario-11")
+  @Consumes("application/x-www-form-urlencoded")
+  testScenario11(
+    @Required() @BodyParams("param1") param1: string
+  ) {
+    return { param1 };
   }
 }
 
@@ -181,7 +202,7 @@ export function testBodyParams(options: PlatformTestingSdkOpts) {
         })
         .expect(200);
 
-      expect(response.body).toEqual({value: ["value"]});
+      expect(response.body).toEqual({ value: ["value"] });
     });
     it("should return an empty array (1)", async () => {
       const response = await request.post("/rest/body-params/scenario-2").send().expect(200);
@@ -198,22 +219,22 @@ export function testBodyParams(options: PlatformTestingSdkOpts) {
     it("should return value", async () => {
       const response = await request.post("/rest/body-params/scenario-3").send(["value"]).expect(200);
 
-      expect(response.body).toEqual({value: ["value"]});
+      expect(response.body).toEqual({ value: ["value"] });
     });
     it("should return an empty array (1)", async () => {
       const response = await request.post("/rest/body-params/scenario-3").send().expect(200);
 
-      expect(response.body).toEqual({value: [{}]});
+      expect(response.body).toEqual({ value: [{}] });
     });
   });
   describe("Scenario4: with expression required Array<string>", () => {
     it("should return value", async () => {
       const response = await request
         .post("/rest/body-params/scenario-4")
-        .send({test: ["value"]})
+        .send({ test: ["value"] })
         .expect(200);
 
-      expect(response.body).toEqual({value: ["value"]});
+      expect(response.body).toEqual({ value: ["value"] });
     });
     it("should throw an exception", async () => {
       const response = await request.post("/rest/body-params/scenario-4").send().expect(400);
@@ -228,7 +249,7 @@ export function testBodyParams(options: PlatformTestingSdkOpts) {
             keyword: "required",
             message: "It should have required parameter 'test'",
             modelName: "body",
-            params: {missingProperty: "test"},
+            params: { missingProperty: "test" },
             schemaPath: "#/required"
           }
         ]
@@ -238,9 +259,9 @@ export function testBodyParams(options: PlatformTestingSdkOpts) {
 
   describe("Scenario4b: with expression required String", () => {
     it("should return value", async () => {
-      const response = await request.post("/rest/body-params/scenario-4b").send({test: "value"}).expect(200);
+      const response = await request.post("/rest/body-params/scenario-4b").send({ test: "value" }).expect(200);
 
-      expect(response.body).toEqual({value: "value"});
+      expect(response.body).toEqual({ value: "value" });
     });
     it("should throw an exception when nothing is sent", async () => {
       const response = await request.post("/rest/body-params/scenario-4b").send().expect(400);
@@ -255,14 +276,14 @@ export function testBodyParams(options: PlatformTestingSdkOpts) {
             keyword: "required",
             message: "It should have required parameter 'test'",
             modelName: "body",
-            params: {missingProperty: "test"},
+            params: { missingProperty: "test" },
             schemaPath: "#/required"
           }
         ]
       });
     });
     it("should throw an exception when nothing is an empty string is sent", async () => {
-      const response = await request.post("/rest/body-params/scenario-4b").send({test: ""}).expect(400);
+      const response = await request.post("/rest/body-params/scenario-4b").send({ test: "" }).expect(400);
 
       expect(response.body).toEqual({
         name: "REQUIRED_VALIDATION_ERROR",
@@ -274,7 +295,7 @@ export function testBodyParams(options: PlatformTestingSdkOpts) {
             keyword: "required",
             message: "It should have required parameter 'test'",
             modelName: "body",
-            params: {missingProperty: "test"},
+            params: { missingProperty: "test" },
             schemaPath: "#/required"
           }
         ]
@@ -283,14 +304,14 @@ export function testBodyParams(options: PlatformTestingSdkOpts) {
   });
   describe("Scenario4c: with expression required Number", () => {
     it("should return value (with 1)", async () => {
-      const response = await request.post("/rest/body-params/scenario-4c").send({test: 1}).expect(200);
+      const response = await request.post("/rest/body-params/scenario-4c").send({ test: 1 }).expect(200);
 
-      expect(response.body).toEqual({value: 1});
+      expect(response.body).toEqual({ value: 1 });
     });
     it("should return value (with 0)", async () => {
-      const response = await request.post("/rest/body-params/scenario-4c").send({test: 0}).expect(200);
+      const response = await request.post("/rest/body-params/scenario-4c").send({ test: 0 }).expect(200);
 
-      expect(response.body).toEqual({value: 0});
+      expect(response.body).toEqual({ value: 0 });
     });
     it("should throw an exception when nothing is sent", async () => {
       const response = await request.post("/rest/body-params/scenario-4b").send().expect(400);
@@ -305,7 +326,7 @@ export function testBodyParams(options: PlatformTestingSdkOpts) {
             keyword: "required",
             message: "It should have required parameter 'test'",
             modelName: "body",
-            params: {missingProperty: "test"},
+            params: { missingProperty: "test" },
             schemaPath: "#/required"
           }
         ]
@@ -314,10 +335,10 @@ export function testBodyParams(options: PlatformTestingSdkOpts) {
   });
   describe("Scenario5: with raw payload", () => {
     it("should return value", async () => {
-      const response = await request.post("/rest/body-params/scenario-5").send('{"test": ["value"]}').expect(200);
+      const response = await request.post("/rest/body-params/scenario-5").send("{\"test\": [\"value\"]}").expect(200);
 
       expect(response.body).toEqual({
-        value: '{"test": ["value"]}'
+        value: "{\"test\": [\"value\"]}"
       });
     });
   });
@@ -420,7 +441,7 @@ export function testBodyParams(options: PlatformTestingSdkOpts) {
             schemaPath: "#/properties/limit/minimum"
           }
         ],
-        message: 'Bad request on parameter "request.body".\nPaginationQuery.limit must be >= 1. Given value: 0',
+        message: "Bad request on parameter \"request.body\".\nPaginationQuery.limit must be >= 1. Given value: 0",
         name: "AJV_VALIDATION_ERROR",
         status: 400
       });
@@ -430,16 +451,16 @@ export function testBodyParams(options: PlatformTestingSdkOpts) {
     it("should throw a Bad request if body params is missing (1)", async () => {
       await request
         .post("/rest/body-params/scenario-10")
-        .send({param1: {}, param2: {value2: "value"}})
+        .send({ param1: {}, param2: { value2: "value" } })
         .expect(400);
     });
     it("should throw a Bad request if body params is missing (2)", async () => {
-      await request.post("/rest/body-params/scenario-10").send({param1: {}, param2: {}}).expect(400);
+      await request.post("/rest/body-params/scenario-10").send({ param1: {}, param2: {} }).expect(400);
     });
     it("should throw a Bad request if body params is missing (3)", async () => {
       await request
         .post("/rest/body-params/scenario-10")
-        .send({param1: {value: "value"}, param2: {}})
+        .send({ param1: { value: "value" }, param2: {} })
         .expect(400);
     });
     it("should throw a Bad request if body params is missing (4)", async () => {
@@ -448,7 +469,16 @@ export function testBodyParams(options: PlatformTestingSdkOpts) {
     it("should validate the body params", async () => {
       await request
         .post("/rest/body-params/scenario-10")
-        .send({param1: {value1: "value"}, param2: {value2: "value"}})
+        .send({ param1: { value1: "value" }, param2: { value2: "value" } })
+        .expect(200);
+    });
+  });
+  describe("Scenario11: validate two payload", () => {
+    it("should validate the body params", async () => {
+      await request
+        .post("/rest/body-params/scenario-11")
+        .set("Content-Type", "application/x-www-form-urlencoded")
+        .send("client_id=id&grant_type=grant")
         .expect(200);
     });
   });
