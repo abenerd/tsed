@@ -1,12 +1,12 @@
-import {IncomingEvent, PlatformContext, PlatformResponse} from "@tsed/common";
-import {ServerResponse} from "http";
+import {PlatformResponse} from "@tsed/common";
 import {getStatusMessage} from "@tsed/schema";
 import encodeUrl from "encodeurl";
+import {FastifyReply} from "fastify";
+import {ServerResponse} from "http";
 
 declare global {
   namespace TsED {
-    export interface Response {
-    }
+    export interface Response {}
   }
 }
 
@@ -14,27 +14,20 @@ declare global {
  * @platform
  * @koa
  */
-export class PlatformFastifyResponse extends PlatformResponse<any> {
-  // #ctx: Koa.Context;
-
-  constructor(event: IncomingEvent, $ctx: PlatformContext) {
-    super(event, $ctx);
-    this.#ctx = this.raw.ctx;
-  }
-
+export class PlatformFastifyResponse extends PlatformResponse<FastifyReply> {
   get statusCode() {
-    return this.raw.status;
+    // return this.raw.status;
   }
 
   get locals() {
-    return this.#ctx.state;
+    //  return this.#ctx.state;
   }
 
   /**
    * Return the Node.js response object
    */
   getRes(): ServerResponse {
-    return this.raw.res;
+    return this.raw.raw;
   }
 
   hasStatus() {
@@ -79,7 +72,7 @@ export class PlatformFastifyResponse extends PlatformResponse<any> {
    * Send any data to your consumer.
    *
    * This method accept a ReadableStream, a plain object, boolean, string, number, null and undefined data.
-   * It choose the better way to send the data.
+   * It chooses the better way to send the data.
    *
    * @param data
    */

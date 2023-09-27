@@ -1,10 +1,9 @@
-import "@koa/router";
 import {IncomingEvent, PlatformContext, PlatformRequest} from "@tsed/common";
+import Koa, {FastifyRequest} from "fastify";
 import {IncomingMessage} from "http";
-import Koa from "koa";
 
-declare module "koa" {
-  export interface Request {
+declare module "fastify" {
+  export interface FastifyRequest {
     id: string;
     $ctx: PlatformContext;
   }
@@ -12,49 +11,36 @@ declare module "koa" {
 
 declare global {
   namespace TsED {
-    export interface Request extends Koa.Request {}
+    export interface Request extends FastifyRequest {}
   }
 }
 
 /**
  * @platform
- * @koa
+ * @fastify
  */
-export class PlatformFastifyRequest extends PlatformRequest<Koa.Request> {
-  #ctx: Koa.Context;
-
-  constructor(event: IncomingEvent, $ctx: PlatformContext) {
-    super(event, $ctx);
-    this.#ctx = this.raw.ctx;
-  }
-
+export class PlatformFastifyRequest extends PlatformRequest<FastifyRequest> {
   get protocol(): string {
-    return this.#ctx.request.protocol;
+    // return this.#ctx.request.protocol;
   }
 
   get host(): string {
-    return this.#ctx.request.host;
+    // return this.#ctx.request.host;
   }
 
   get secure(): boolean {
-    return this.#ctx.request.secure;
+    // return this.#ctx.request.secure;
   }
 
   get cookies(): {[p: string]: any} {
-    return this.#ctx.cookie || this.#ctx.cookies;
+    // return this.#ctx.cookie || this.#ctx.cookies;
   }
 
   get session(): any {
-    return this.#ctx.session;
+    // return this.#ctx.session;
   }
 
   getReq(): IncomingMessage {
-    return this.raw.req;
-  }
-
-  destroy() {
-    // @ts-ignore
-    this.#ctx = null;
-    return super.destroy();
+    return this.raw.raw;
   }
 }

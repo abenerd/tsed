@@ -5,16 +5,18 @@ import {
   PlatformAdapter,
   PlatformApplication,
   PlatformBuilder,
-  PlatformContext, PlatformExceptions,
+  PlatformContext,
+  PlatformExceptions,
   PlatformHandler,
   PlatformRequest,
   PlatformResponse,
   runInContext
 } from "@tsed/common";
 import {Type} from "@tsed/core";
-import {PlatformLayer} from "@tsed/platform-router";
+import {PlatformHandlerMetadata, PlatformLayer} from "@tsed/platform-router";
 import next from "ajv/dist/vocabularies/next";
-import Fastify, {FastifyInstance} from "fastify";
+import Fastify, {FastifyInstance, FastifyReply, FastifyRequest} from "fastify";
+import Koa from "koa";
 import {PlatformFastifyApplication} from "../services/PlatformFastifyApplication";
 import {PlatformFastifyHandler} from "../services/PlatformFastifyHandler";
 import {PlatformFastifyRequest} from "../services/PlatformFastifyRequest";
@@ -22,12 +24,10 @@ import {PlatformFastifyResponse} from "../services/PlatformFastifyResponse";
 
 declare global {
   namespace TsED {
-    export interface Application extends FastifyInstance {
-    }
+    export interface Application extends FastifyInstance {}
   }
 
-  namespace TsED {
-  }
+  namespace TsED {}
 }
 
 /**
@@ -54,8 +54,7 @@ export class PlatformFastify implements PlatformAdapter<FastifyInstance> {
     }
   ];
 
-  constructor(private injector: InjectorService) {
-  }
+  constructor(private injector: InjectorService) {}
 
   /**
    * Create new serverless application. In this mode, the component scan are disabled.
@@ -112,16 +111,29 @@ export class PlatformFastify implements PlatformAdapter<FastifyInstance> {
     });
   }
 
-  // useRouter(): this {
-  //    //const app = this.injector.get<PlatformApplication<Fastify>>(PlatformApplication)!;
-  //
-  //    //app.getApp().register(require('fastify-cors'), {
-  //   //
-  //   // app.getApp().use(resourceNotFoundMiddleware);
-  //   // app.getApp().use(app.getRouter().routes()).use(app.getRouter().allowedMethods());
-  //   //
-  //   return this;
-  // }
+  mapHandler(handler: Function, metadata: PlatformHandlerMetadata) {
+    // if (metadata.isRawMiddleware()) {
+    //   return handler;
+    // }
+    //
+    // return async (koaContext: Koa.Context, next: Koa.Next) => {
+    //   const {$ctx} = koaContext.request;
+    //   $ctx.next = next;
+    //
+    //   await handler($ctx);
+    // };
+  }
+
+  useRouter(): this {
+    //const app = this.injector.get<PlatformApplication<Fastify>>(PlatformApplication)!;
+
+    //app.getApp().register(require('fastify-cors'), {
+    //
+    // app.getApp().use(resourceNotFoundMiddleware);
+    // app.getApp().use(app.getRouter().routes()).use(app.getRouter().allowedMethods());
+    //
+    return this;
+  }
 
   useContext(): this {
     const app = this.getPlatformApplication();
@@ -129,10 +141,10 @@ export class PlatformFastify implements PlatformAdapter<FastifyInstance> {
 
     this.injector.logger.debug("Mount app context");
 
-    app.addHook("onRequest", async (request: any, reply: any, done: any) => {
+    app.addHook("onRequest", async (request: FastifyRequest, reply: FastifyReply) => {
       const $ctx = invoke({
-        request: request.,
-        response
+        request: request,
+        response: reply
       });
 
       await $ctx.start();
@@ -149,13 +161,11 @@ export class PlatformFastify implements PlatformAdapter<FastifyInstance> {
   }
 
   app() {
-    const { app, ...props } = this.injector.settings.get("fastify") || {};
+    const {app, ...props} = this.injector.settings.get("fastify") || {};
     const app: FastifyInstance = app || Fastify();
     app.register(middie);
 
-    app.get("/test", (req, res) => {
-
-    });
+    app.get("/test", (req, res) => {});
 
     app.addHook("onError", (request, reply, error) => {
       this.injector.get<PlatformExceptions>(PlatformExceptions)?.catch(error, ctx.request.$ctx);
@@ -167,14 +177,13 @@ export class PlatformFastify implements PlatformAdapter<FastifyInstance> {
     };
   }
 
+  multipart(options: PlatformMulterSettings): PlatformMulter {
+    // return getMulter(options);
+  }
 
-  // multipart(options: PlatformMulterSettings): PlatformMulter {
-  //   // return getMulter(options);
-  // }
-
-  // statics(endpoint: string, options: PlatformStaticsOptions) {
-  //   // return staticsMiddleware(options);
-  // }
+  statics(endpoint: string, options: PlatformStaticsOptions) {
+    // return staticsMiddleware(options);
+  }
 
   // bodyParser(type: "json" | "urlencoded" | "raw" | "text", additionalOptions: any = {}): any {
   //   // const opts = this.injector.settings.get(`koa.bodyParser`);
